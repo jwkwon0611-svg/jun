@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영어 독해 심화 강의 슬라이드 (최종 완성본)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .slide {
+            transition: opacity 0.5s ease-in-out;
+            position: absolute;
+            inset: 0;
+            padding: 2rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow-y: auto;
+        }
+        .slide-content {
+             width: 100%;
+        }
+        .hidden-content {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out, max-height 0.4s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+        }
+        .visible-content {
+            opacity: 1;
+            transform: translateY(0);
+            max-height: 500px; /* 충분한 높이 */
+        }
+        /* 애니메이션 아이템 스타일 */
+        .animated-item {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        .animated-item.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .highlight-yellow { background: linear-gradient(to top, #fff59d 50%, transparent 50%); }
+        .highlight-blue { background: linear-gradient(to top, #90caf9 50%, transparent 50%); }
+        .highlight-green { background: linear-gradient(to top, #a5d6a7 50%, transparent 50%); }
+        .highlight-red { background: linear-gradient(to top, #ef9a9a 50%, transparent 50%); }
+        
+        .example-box {
+            background-color: #f8fafc;
+            border-left: 4px solid #60a5fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+        .explanation-box {
+            background-color: #f0f9ff;
+            border-left: 4px solid #2563eb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+         .analysis-box {
+            background-color: #f3e8ff;
+            border-left: 4px solid #8b5cf6;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+        .base-button {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            color: white;
+            font-weight: bold;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+            border: none;
+        }
+        .base-button:hover:not(:disabled) {
+            transform: scale(1.05);
+        }
+        .base-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .reveal-button {
+            background-color: #3b82f6;
+        }
+        .reveal-button:hover:not(:disabled) {
+            background-color: #2563eb;
+        }
+        .gemini-button {
+            background-color: #8b5cf6;
+            margin-left: 0.5rem;
+        }
+        .gemini-button:hover:not(:disabled) {
+            background-color: #7c3aed;
+        }
+        .quiz-option:hover {
+            background-color: #e0e7ff;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-4xl mx-auto">
+        <div id="slides-container" class="relative bg-white rounded-xl shadow-2xl overflow-hidden" style="height: 650px;">
+            <!-- Slides will be injected here by JavaScript -->
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex justify-between items-center mt-6">
+            <button id="prev-button" class="bg-white hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg shadow transition disabled:opacity-50 disabled:cursor-not-allowed">
+                이전
+            </button>
+            <div id="slide-counter" class="text-gray-600 font-semibold"></div>
+            <button id="next-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow transition disabled:opacity-50 disabled:cursor-not-allowed">
+                다음
+            </button>
+        </div>
+    </div>
+
+    <script>
+    // --- Slide Data ---
+    const slideData = [
+        { type: 'cover', title: '독해의 시작', subtitle: '메르센 영어 - 권익준 선생님' },
+        { 
+            type: 'simple', 
+            title: '도전! 직접 해석해 보세요 ✍️',
+            subtitle: '아래 문장을 끊어읽기 없이 해석해 볼까요?',
+            content: '이 문장을 쉽게 해석하려면 어떻게 해야 할까요? 지금부터 그 비법을 하나씩 알려드릴게요.',
+            example: '"Since that time, it has become apparent that broadly effective pesticides can have harmful effects on beneficial insects, which can negate their effects in controlling pests, and that persistent pesticides can damage non-target organisms in the ecosystem, such as birds and people."'
+        },
+        {
+            type: 'animated-list',
+            title: '문장을 길게 만드는 6가지 핵심 덩어리',
+            items: [
+                '접속사 (because, when, that...)',
+                '관계사 (who, which, that...)',
+                '전치사 (in, on, for, of...)',
+                'to부정사 (to do, to see...)',
+                'ing (현재분사)',
+                '과거분사 (p.p.)'
+            ]
+        },
+        {
+            type: 'overview',
+            title: '끊어읽기를 완성하는 3가지 추가 법칙 ➕',
+            content: '앞서 배운 6가지 핵심 덩어리 외에, 아래 3가지 규칙을 더하면 독해를 위한 <span class="font-bold text-red-500">9가지 끊어읽기 법칙</span>이 완성됩니다!',
+            sections: [
+                { title: '1. 명사 + 주어 + 동사', description: '명사 뒤에 [주어+동사]가 오면 그 앞에서 끊어요. (관계사 생략)' },
+                { title: '2. 동사 + 주어 + 동사', description: '동사 뒤에 [주어+동사]가 오면 그 앞에서 끊어요. (접속사 생략)' },
+                { title: '3. 주어 ... 동사', description: '주어와 동사가 멀리 떨어져 있으면 동사 앞에서 끊어요.' }
+            ]
+        },
+        { 
+            type: 'interactive', 
+            title: '추가 법칙 1: 명사 + 주어 + 동사', 
+            description: '명사 뒤에 [주어+동사]가 오면, (관계사가 생략된) 수식어구를 괄호로 묶고 본동사 앞에서 끊어주세요.', 
+            example: 'The book (I bought yesterday) <span class="text-red-500">/</span> is very interesting.', 
+            explanation: '그 책은 (내가 어제 샀던) / 매우 흥미롭다.',
+            buttonText: '해석 보기 ✨'
+        },
+        { 
+            type: 'interactive', 
+            title: '추가 법칙 2: 동사 + 주어 + 동사', 
+            description: 'think, know, believe 같은 동사 뒤에 또 다른 [주어 + 동사]가 나오면, 그 앞에서 끊어주세요. 접속사 that이 생략된 형태입니다.', 
+            example: 'I think <span class="text-red-500">/</span> he is honest.', 
+            explanation: '나는 생각한다 / 그가 정직하다고.',
+            buttonText: '해석 보기 ✨'
+        },
+        { 
+            type: 'interactive', 
+            title: '추가 법칙 3: 주어 ... 동사', 
+            description: '주어를 꾸며주는 말이 길어지면, 그 수식어구를 괄호로 묶고 진짜 동사 앞에서 끊어주세요.', 
+            example: 'The man (standing over there) <span class="text-red-500">/</span> is my brother.', 
+            explanation: '그 남자는 (저기 서 있는) / 나의 형이다.',
+            buttonText: '해석 보기 ✨'
+        },
+        { 
+            type: 'interactive', 
+            title: '독해의 첫 단계 ✂️: 끊어읽기 적용', 
+            description: '어려웠던 문장에 9가지 끊어읽기 법칙을 적용하면 이렇게 잘게 나눌 수 있어요!', 
+            example: '"Since that time, <span class="text-red-500">/</span> it has become apparent <span class="text-red-500">/</span> that broadly effective pesticides can have harmful effects <span class="text-red-500">/</span> on beneficial insects, <span class="text-red-500">/</span> which can negate their effects <span class="text-red-500">/</span> in controlling pests, <span class="text-red-500">/</span> and that persistent pesticides can damage non-target organisms <span class="text-red-500">/</span> in the ecosystem, <span class="text-red-500">/</span> such as birds and people."', 
+            explanation: '"그때부터, / 명백해졌다 / 광범위하게 효과적인 살충제는 해로운 영향을 미칠 수 있다는 것이 / 유익한 곤충들에게, / 그리고 그것은 해충 통제에 있어서 그들의 효과를 무효화할 수 있다 / 그리고 지속성 있는 살충제는 생태계의 의도치 않은 유기체에게 피해를 줄 수 있다는 것이 / 새나 사람과 같은"',
+            buttonText: '해석 보기 ✨'
+        },
+        {
+            type: 'overview',
+            title: '구사 법칙: 끊고 → 연결하기 🔗',
+            content: '독해는 2단계로 완성돼요. 먼저, 문장을 간단하게 만드는 **9가지 끊어읽기 법칙**으로 덩어리를 나눠요. 그 다음, 끊어진 덩어리들을 매끄럽게 이어주는 **4가지 연결 핵심 법칙**을 적용해요. 이 전체 과정이 바로 구사 법칙입니다!',
+            sections: [
+                { title: '1. 은/는/이/가 법칙', description: '주어를 알맞게 해석하기' },
+                { title: '2. 조사의 활용', description: '전치사를 자연스럽게 붙이기' },
+                { title: '3. "어떤 뭐?" 법칙', description: '꾸며주는 말을 명확하게' },
+                { title: '4. 자주 나오는 핵심 패턴', description: '필수 표현 익히기' }
+            ]
+        },
+        { type: 'interactive', title: '구사 법칙 1: 은/는/이/가', description: '문장을 매끄럽게 연결하기 위해 주어에 \'은/는\' 또는 \'이/가\'를 알맞게 붙여요.<br>🔵 <span class="font-bold text-blue-700">\'이/가\'</span>: 접속사/관계사 안의 주어<br>🟢 <span class="font-bold text-green-700">\'은/는\'</span>: 문장 전체의 진짜 주어', rule_prompt: "a sentence where a main clause subject is distinguished from a subordinate clause subject", example: '"Documents, folders, and desktops are the terms we use because Steve Jobs understood that using familiar terms would make the new technology easier to understand."', explanation: '"문서와 폴더 데스크탑<span class="highlight-green">은</span> 용어다 / 우리<span class="highlight-blue">가</span> 사용하는 / 스티브 잡스<span class="highlight-blue">가</span> 이해했기 때문에 / 친숙한 용어를 사용하는 것<span class="highlight-blue">이</span> 새로운 기술을 이해한다는 것을"' },
+        { type: 'interactive', title: '구사 법칙 2: 조사의 활용', description: '전치사의 뜻을 정확히 알고 문맥에 맞는 조사를 붙여주는 센스가 필요해요!', rule_prompt: "a sentence using prepositions like 'from', 'in', and 'of' to show relationships between nouns", example: '"Firms directly benefit from the decrease in their costs of production and provision of services."', explanation: '"회사들은 직접적으로 이익을 얻는다 감소<span class="highlight-blue">로부터</span> / 생산 비용과 서비스 제공 비용<span class="highlight-blue">의</span> 감소<span class="highlight-blue">로부터</span>"' },
+        { type: 'interactive', title: '구사 법칙 2: 조사의 활용', description: '전치사 on을 문맥에 맞게 \'~에 끼치는\'으로 해석하면 훨씬 자연스러워요.', rule_prompt: "a phrase using 'on' to show impact or effect", example: '"the impact of reward immediacy on decision-making"', explanation: '"보상 즉각성의 영향 / 결정<span class="highlight-blue">에 끼치는</span>"' },
+        { type: 'interactive', title: '구사 법칙 2: 조사의 활용', description: 'of는 \'~의\', for는 \'~을 위한\' 등, 전치사를 자연스럽게 연결해야 해요.', rule_prompt: "a phrase using 'of' and 'for' to show purpose and possession", example: '"significance of note taking for active engagement in discussion"', explanation: '"메모<span class="highlight-blue">의</span> 중요성 / 논의의 적극적인 참여<span class="highlight-blue">를 위한</span>"' },
+        { type: 'interactive', title: '구사 법칙 3: "어떤 뭐?"', description: '명사를 꾸며주는 말이 나오면, 마음속으로 <span class="font-bold">"어떤 뭐?"</span>라고 물어보세요. 문장 구조가 한눈에 보여요!', rule_prompt: "a complex sentence with multiple relative clauses or phrases modifying nouns", example: '"The big problem with money created by the government is that those who run the government always face the temptation to create more money and spend it."', explanation: `"커다란 문제 <span class='text-red-500'>(어떤 문제?)</span> 돈의 문제 <span class='text-red-500'>(어떤 돈?)</span> 정부에 의해 만들어지는 돈의 문제는 / 사람들 <span class='text-red-500'>(어떤 사람들?)</span> 정부를 운영하는 사람들이 유혹을 마주한다는 거다 <span class='text-red-500'>(어떤 유혹?)</span> 더 많은 돈을 만들어내고 그것을 쓰라는 유혹"` },
+        { type: 'title', title: '자주 나오는 핵심 패턴 🧩', content: '빠르고 정확한 독해를 위한 필수 패턴들을 하나씩 살펴봐요!' },
+        { type: 'interactive', title: '패턴 1: 접속사 덩어리', description: '[접속사 + 주어 + 동사] 덩어리는 문맥에 맞는 \'접속사의 뜻\'으로 해석을 마쳐야 해요.', example: 'When he arrived, <span class="text-red-500">/</span> we started the meeting.', explanation: '그가 도착했을 때 / 우리는 회의를 시작했다.', buttonText: '해석 보기 ✨' },
+        { type: 'interactive', title: '패턴 2: 전치사 덩어리', description: '[전치사 + 명사] 덩어리는 문맥에 맞는 \'전치사의 뜻\'으로 해석을 마쳐야 해요.', example: 'He put the book <span class="text-red-500">/</span> on the desk.', explanation: '그는 책을 놓았다 / 책상 위에.', buttonText: '해석 보기 ✨' },
+        { type: 'interactive', title: '패턴 3: to부정사 (~가 ~하는 것)', description: '`for + 목적격` 뒤에 to부정사가 오면, `for + 목적격`을 주어처럼 \'~이/가\'로 해석해요.', rule_prompt: "a sentence starting with 'It is [adjective] for [someone] to [do something]'", example: '"It is difficult for us to maintain a constant level of attention throughout our working day."', explanation: '"어렵다 / <span class="highlight-blue">우리가</span> 끊임없는 주의력 수준을 유지하는 게"' },
+        { type: 'interactive', title: '패턴 3: to부정사 (~하기 위해)', description: '문장 맨 앞에 `To ..., 주어 + 동사` 형태는 `~하기 위해`로 해석해요.', rule_prompt: "a sentence starting with an infinitive of purpose", example: '"To attract a wide audience, stories should focus on topics that interest many people."', explanation: '"폭넓은 관객을 끌어들이기 <span class="highlight-blue">위해</span> / 이야기들은 ~에 집중해야 한다."' },
+        { type: 'interactive', title: '패턴 3: to부정사 (~하는 것은)', description: '문장 맨 앞에 `To ...`가 동사와 바로 연결되면 `~하는 것은`으로 주어처럼 해석해요.', rule_prompt: "a sentence where an infinitive phrase is the subject", example: '"To monitor our surroundings is to focus on what\'s outside of ourselves"', explanation: '"우리의 주변을 살피는 <span class="highlight-blue">것은</span> / 우리 자신 외부의 것에 집중하는 것이다."' },
+        { type: 'interactive', title: '패턴 4: 콤마(,) ing', description: '문장 뒤에 `, ing`가 오면 `~하면서`라고 자연스럽게 연결해요.', rule_prompt: "a sentence with a participial phrase (using an -ing verb) at the end, set off by a comma", example: '"This has happened again and again over the centuries, leading to inflation..."', explanation: '"이것은 계속해서 몇 세기 동안 일어났다 / 인플레이션을 이끌<span class="highlight-blue">면서</span>"' },
+        { type: 'interactive', title: '패턴 5: as', description: 'as는 문맥에 따라 <span class="highlight-yellow">~할 때, ~때문에, ~처럼, ~로서</span> 4가지로 해석돼요.', rule_prompt: "a sentence using 'as' to mean 'like' or 'in the same way'", example: '"...our feet and legs still react as they did in prehistoric times."', explanation: '"...우리의 발과 다리는 여전히 반응한다 / 그것들이 선사 시대에 그랬던 <span class="highlight-blue">것처럼</span>"' },
+        { type: 'interactive', title: '패턴 6: how + 형용사/부사', description: 'how 뒤에 `형용사/부사`가 오면 `얼마나`로 해석해요.', rule_prompt: "a sentence using 'how' followed by an adjective or adverb", example: '"Imagine how difficult it would be to converse with someone..."', explanation: '"상상해 봐라 / <span class="highlight-blue">얼마나</span> 어려울지 누군가와 대화하는 게"' },
+        { type: 'interactive', title: '패턴 6: how + 주어+동사', description: 'how 뒤에 `주어+동사` 절이 오면 `어떻게`로 해석해요.', rule_prompt: "a sentence using 'how' to mean 'in what way'", example: '"Paying with plastic fundamentally changes how we spend money..."', explanation: '"카드를 가지고 지불하는 것은 근본적으로 바꾼다 / <span class="highlight-blue">어떻게</span> 우리가 돈을 쓰는지를"' },
+        { type: 'interactive', title: '패턴 7: It is ~ that/to (가주어)', description: '문장 맨 앞의 It은 뜻이 없는 가주어일 때가 많아요. `그것은`이라고 해석하지 않아요!', rule_prompt: "a sentence starting with 'It' as a dummy subject", example: '"It was long thought that handedness could only be reliably determined in elementary school..."', explanation: '"오랫동안 생각됐다 / 왼손잡이 성향은 오직 초등학교 때 결정될 수 있다고..."' },
+        { type: 'interactive', title: '패턴 8: 부정어 주어', description: 'No, Nothing 같은 부정어가 주어일 땐 `어떤/아무 ~도 아니다`로 해석해요.', rule_prompt: "a sentence starting with a negative word like 'No' or 'Nothing' as the subject", example: '"No lasting results can be achieved unless the individual convinces himself..."', explanation: '"<span class="highlight-red">어떤</span> 지속되는 결과<span class="highlight-red">도</span> 달성될 수 없다 / 개인이 스스로를 납득시키지 않는 한..."' },
+        { type: 'interactive', title: '패턴 9: With + 목적어 + 현재분사', description: '목적어가 능동적으로 `~하면서` 또는 `~한 채로` 라고 해석해요.', rule_prompt: "a sentence using the 'with + noun + present participle' construction", example: '"With so many people moving to the city, many farmers need help..."', explanation: '"아주 많은 사람들이 도시로 이주<span class="highlight-blue">하면서</span> / 많은 농부들은 도움이 필요하다..."' },
+        { type: 'interactive', title: '패턴 9: With + 목적어 + 과거분사', description: '목적어가 수동적으로 `~되면서` 또는 `~된 채로` 라고 해석해요.', rule_prompt: "a sentence using the 'with + noun + past participle' construction", example: '"She lay still, with her eyes closed."', explanation: '"그녀는 가만히 누워 있었다 / 그녀의 눈이 <span class="highlight-blue">감긴 채로</span>"' },
+        { type: 'interactive', title: '패턴 10: 부연 설명 기호 (–, :, ;)', description: '콤마(,), 짝대기(-), 콜론(:), 세미콜론(;)은 부연설명! <span class="highlight-yellow">"즉,"</span> 이라고 읽으면 편해요.', rule_prompt: "a sentence using a dash for elaboration", example: '"...long before elementary school — interestingly, even before birth in most people."', explanation: '"...초등학교 훨씬 이전에 — <span class="highlight-blue">즉,</span> 흥미롭게도, 대부분의 사람들에게는 태어나기 전에도"' },
+        { type: 'interactive', title: '패턴 11: It is ~ that 강조', description: '`that 이하인 것은 바로 ~이다` 라고 해석해서 강조의 느낌을 살려줘요.', rule_prompt: "an 'it-cleft' sentence (It is... that...)", example: '"It is I that am responsible for that."', explanation: '"그것에 대해 책임 있는 사람은 <span class="highlight-red">바로</span> 나다."' },
+        { type: 'interactive', title: '패턴 12: find O C', description: 'find를 `찾다`가 아니라 `알다, 생각하다`로 해석하면 더 자연스러울 때가 많아요.', rule_prompt: "a sentence using 'find' to mean 'realize' or 'think'", example: '"I find that you could have gotten better grades."', explanation: '"나는 <span class="highlight-blue">생각한다</span> / 네가 더 나은 점수를 받을 수도 있었다는 걸."' },
+        { type: 'interactive', title: '패턴 13: 조동사 have pp (추측)', description: '`must have pp`는 과거 사실에 대한 강한 추측을 나타내며, `~했음에 틀림없다`로 해석해요.', rule_prompt: "a sentence using 'must have' + past participle", example: '"The phone rang but I didn\'t hear it. I must have been asleep."', explanation: '"전화가 울렸지만 나는 그걸 듣지 못했다. 나는 잠들었음<span class="highlight-blue">에 틀림없다</span>."' },
+        { type: 'interactive', title: '패턴 13: 조동사 have pp (후회)', description: '`should have pp`는 과거에 하지 않은 일에 대한 후회를 나타내며, `~했어야 했다`로 해석해요.', rule_prompt: "a sentence using 'should have' + past participle", example: '"I should have apologized to him before his death."', explanation: '"나는 그에게 사과했었어야 <span class="highlight-blue">했다</span> / 그의 죽음 전에."' },
+        { type: 'interactive', title: '패턴 14: As 원급 As', description: '첫 번째 as는 무시! 두 번째 as만 `~만큼`, `~처럼`으로 해석해요.', rule_prompt: "a sentence with the 'as...as' comparison structure", example: '"You should know that stimulants are as likely to have negative effects on memory as they are to be beneficial."', explanation: '"너는 알아야 한다 / 자극제들이 기억에 부정적인 영향을 끼칠 가능성이 있다는 것을 / 그것들이 이로운 것<span class="highlight-blue">만큼</span>."' },
+        { type: 'interactive', title: '패턴 15: 병렬 구조', description: 'and/or로 연결된 단어 중 하나만 알아도 의미를 파악할 수 있어요!', rule_prompt: "a sentence with a parallel structure using 'and' or 'or' to connect three or more items", example: '"For example, migrants are assumed to overcrowd cities, clog up labor markets, and increase poverty."', explanation: '만약 clog up(막다)을 몰라도, overcrowd(초과밀하게 하다)와 increase poverty(빈곤을 증가시키다)를 통해 <span class="highlight-red">부정적인 내용</span>이라는 걸 알 수 있어요.' },
+        { type: 'interactive', title: '패턴 16: in ing / by ing', description: '`in ing`는 `~하는 데 있어서`, `by ing`는 `~함으로써`로 해석하는 중요한 표현이에요.', rule_prompt: "a phrase using 'in' + gerund", example: '"difficulty in sharing scientific knowledge with the public"', explanation: '"어려움 / 과학적 지식을 대중과 공유하는 데 <span class="highlight-blue">있어서</span>의"' },
+        { type: 'final', title: '수고했어요! 🎉', subtitle: '이제 여러분도 독해 전문가!', content: '오늘 배운 규칙과 패턴들을 꾸준히 연습하면, 아무리 긴 문장이라도 덩어리로 빠르고 정확하게 해석할 수 있게 될 거예요!' },
+    ];
+
+    // --- Core Logic ---
+    (function() {
+        const container = document.getElementById('slides-container');
+        const prevButton = document.getElementById('prev-button');
+        const nextButton = document.getElementById('next-button');
+        const slideCounter = document.getElementById('slide-counter');
+        
+        const apiKey = ""; // API 키는 여기에 입력하거나 비워두세요.
+        let currentSlide = 0;
+        const totalSlides = slideData.length;
+
+        function createSlide(data, index) {
+            let slideHTML = '';
+            if (data.type === 'cover') {
+                slideHTML = `<div class="slide-content text-center flex flex-col justify-center items-center h-full">
+                                <h1 class="text-5xl md:text-6xl font-black text-gray-800 mb-4">${data.title}</h1>
+                                <p class="text-2xl md:text-3xl font-bold text-blue-600">${data.subtitle}</p>
+                            </div>`;
+            } else if (data.type === 'title' || data.type === 'final') {
+                slideHTML = `<div class="slide-content text-center">
+                        <h1 class="text-4xl md:text-5xl font-black text-gray-800 mb-4">${data.title}</h1>
+                        ${data.subtitle ? `<h2 class="text-2xl md:text-3xl font-bold text-blue-600 mb-8">${data.subtitle}</h2>` : ''}
+                        <p class="text-lg text-gray-600 max-w-2xl mx-auto">${data.content}</p>
+                        ${data.type === 'final' ? `<div class="mt-8 border-t pt-6">
+                            <h3 class="text-2xl font-bold text-purple-700">AI 실력 점검 퀴즈</h3>
+                            <p class="text-gray-600 mt-2 mb-4">지금까지 배운 내용으로 AI가 만든 퀴즈를 풀어보세요!</p>
+                            <button id="quiz-button" class="base-button gemini-button">퀴즈 풀어보기 ✨</button>
+                            <div id="quiz-container" class="mt-4 text-left"></div>
+                        </div>
+                        <button id="restart-button" class="base-button reveal-button mt-8">처음부터 다시 보기</button>` : ''}
+                    </div>`;
+            } else if (data.type === 'animated-list') {
+                const itemsHTML = data.items.map((item, i) => 
+                    `<div class="animated-item bg-white p-4 rounded-lg shadow-md text-center text-xl font-semibold text-gray-700" style="transition-delay: ${i * 200}ms;">${item}</div>`
+                ).join('');
+                slideHTML = `<div class="slide-content text-center">
+                        <h1 class="text-3xl md:text-4xl font-black text-gray-800 mb-8">${data.title}</h1>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
+                            ${itemsHTML}
+                        </div>
+                        <button id="start-animation-button" class="base-button reveal-button mt-10">덩어리 확인하기!</button>
+                    </div>`;
+            } else if (data.type === 'overview') {
+                const sectionsHTML = data.sections.map(section => 
+                    `<div class="bg-blue-50 p-4 rounded-lg">
+                        <h3 class="font-bold text-lg text-blue-800">${section.title}</h3>
+                        <p class="text-gray-600">${section.description}</p>
+                    </div>`
+                ).join('');
+                slideHTML = `<div class="slide-content">
+                        <h1 class="text-3xl md:text-4xl font-black text-gray-800 text-center mb-4">${data.title}</h1>
+                        <p class="text-lg text-gray-600 text-center mb-8">${data.content}</p>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            ${sectionsHTML}
+                        </div>
+                    </div>`;
+            } else if (data.type === 'simple') {
+                 slideHTML = `<div class="slide-content">
+                        <h1 class="text-3xl md:text-4xl font-black text-gray-800 mb-2">${data.title}</h1>
+                        <h2 class="text-xl md:text-2xl font-bold text-blue-600 mb-6">${data.subtitle}</h2>
+                        <p class="text-lg text-gray-600 mb-6">${data.content}</p>
+                        <div class="example-box">
+                            <p class="text-gray-500 text-sm mb-2 font-bold">도전 문장</p>
+                            <p class="text-md text-gray-800 leading-relaxed font-semibold">${data.example}</p>
+                        </div>
+                    </div>`;
+            } else if (data.type === 'interactive') {
+                 slideHTML = `<div class="slide-content">
+                        <h1 class="text-3xl md:text-4xl font-black text-gray-800 mb-4">${data.title}</h1>
+                        <p class="text-lg text-gray-600 mb-4">${data.description}</p>
+                        <div class="example-box">
+                            <p class="text-gray-500 text-sm mb-2 font-bold">원문</p>
+                            <p class="text-md text-gray-800" data-role="example-text">${data.example}</p>
+                        </div>
+                        <div class="flex items-center flex-wrap">
+                            <button class="base-button reveal-button">${data.buttonText || '규칙 적용! ✨'}</button>
+                             ${data.rule_prompt ? `<button class="base-button gemini-button" data-rule-prompt="${data.rule_prompt}">새로운 예문 만들기 ✨</button>` : ''}
+                           <button class="base-button gemini-button analysis-button">AI 심층 분석 ✨</button>
+                        </div>
+                        <div class="hidden-content explanation-container">
+                            <div class="explanation-box">
+                                <p class="text-gray-500 text-sm mb-2 font-bold">적용 예시</p>
+                                <p class="text-md text-blue-800 font-semibold" data-role="explanation-text">${data.explanation}</p>
+                            </div>
+                        </div>
+                        <div class="hidden-content analysis-container">
+                             <div class="analysis-box"></div>
+                        </div>
+                    </div>`;
+            }
+            const slideDiv = document.createElement('div');
+            slideDiv.id = `slide-${index}`;
+            slideDiv.className = 'slide hidden';
+            slideDiv.innerHTML = slideHTML;
+            return slideDiv;
+        }
+
+        async function callGemini(prompt, schema) {
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json", responseSchema: schema } };
+            try {
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) throw new Error(`API 요청 실패: ${response.status}`);
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0) return JSON.parse(result.candidates[0].content.parts[0].text);
+                else throw new Error("API로부터 유효한 응답을 받지 못했습니다.");
+            } catch (error) {
+                console.error("Gemini API 호출 오류:", error);
+                return null;
+            }
+        }
+        
+        async function handleGenerateExample(button) { 
+            const rulePrompt = button.dataset.rulePrompt;
+            if (!rulePrompt) return;
+            const originalText = button.textContent;
+            button.textContent = '생성 중...';
+            button.disabled = true;
+            const prompt = `Please create a new, simple English example sentence that clearly demonstrates the following grammatical rule: "${rulePrompt}". Also provide its natural Korean translation, highlighting the key part of the rule in the translation with <span> tags if appropriate. Return as a JSON object with keys "english" and "korean".`;
+            const schema = { type: "OBJECT", properties: { "english": { "type": "STRING" }, "korean": { "type": "STRING" } } };
+            const result = await callGemini(prompt, schema);
+            if (result && result.english && result.korean) {
+                const slideContent = button.closest('.slide-content');
+                slideContent.querySelector('[data-role="example-text"]').textContent = result.english;
+                slideContent.querySelector('[data-role="explanation-text"]').innerHTML = result.korean;
+                slideContent.querySelector('.explanation-container').classList.remove('visible-content');
+                slideContent.querySelector('.analysis-container').classList.remove('visible-content');
+                slideContent.querySelector('.analysis-container .analysis-box').innerHTML = '';
+            } else {
+                alert("새로운 예문을 만드는 데 실패했어요. 다시 시도해주세요.");
+            }
+            button.textContent = originalText;
+            button.disabled = false;
+        }
+
+        async function handleAnalysis(button) {
+            const slideContent = button.closest('.slide-content');
+            const analysisContainer = slideContent.querySelector('.analysis-container');
+            const analysisBox = analysisContainer.querySelector('.analysis-box');
+            
+            if (analysisContainer.classList.contains('visible-content')) {
+                analysisContainer.classList.remove('visible-content');
+                return;
+            }
+
+            const sentence = slideContent.querySelector('[data-role="example-text"]').textContent.replace(/ \/ /g, ''); // Remove slashes for analysis
+            const ruleTitle = slideContent.querySelector('h1').textContent;
+            
+            const originalText = button.textContent;
+            button.textContent = '분석 중...';
+            button.disabled = true;
+            analysisBox.innerHTML = '<p>AI가 문장을 심층 분석하고 있어요...</p>';
+            analysisContainer.classList.add('visible-content');
+
+            const prompt = `Analyze the following English sentence: "${sentence}". Provide a grammatical analysis based on the rule: "${ruleTitle}". Your analysis should be in a JSON object with the following keys: "breakdown" (a string explaining the subject, verb, and object in Korean), "rule_explanation" (a string explaining how the specific rule applies to this sentence in Korean), and "vocabulary" (an array of objects, where each object has a "word" key and a "meaning" key in Korean).`;
+            const schema = {
+              type: "OBJECT",
+              properties: {
+                "breakdown": { "type": "STRING" },
+                "rule_explanation": { "type": "STRING" },
+                "vocabulary": {
+                  "type": "ARRAY",
+                  "items": {
+                    "type": "OBJECT",
+                    "properties": { "word": { "type": "STRING" }, "meaning": { "type": "STRING" } },
+                    "required": ["word", "meaning"]
+                  }
+                }
+              },
+              required: ["breakdown", "rule_explanation", "vocabulary"]
+            };
+
+            const result = await callGemini(prompt, schema);
+
+            if (result) {
+                let vocabHTML = result.vocabulary.map(v => `<li><span class="font-semibold">${v.word}</span>: ${v.meaning}</li>`).join('');
+                analysisBox.innerHTML = `
+                    <h4 class="font-bold text-lg text-purple-800">구조 분석</h4>
+                    <p class="mt-1 mb-3 text-sm">${result.breakdown}</p>
+                    <h4 class="font-bold text-lg text-purple-800">규칙 설명</h4>
+                    <p class="mt-1 mb-3 text-sm">${result.rule_explanation}</p>
+                    <h4 class="font-bold text-lg text-purple-800">핵심 어휘</h4>
+                    <ul class="list-disc list-inside mt-1 text-sm">${vocabHTML}</ul>
+                `;
+            } else {
+                analysisBox.innerHTML = '<p>분석에 실패했어요. 다시 시도해주세요.</p>';
+            }
+
+            button.textContent = originalText;
+            button.disabled = false;
+        }
+        
+        async function handleGenerateQuiz(button) { 
+            const quizContainer = document.getElementById('quiz-container');
+            if (!quizContainer) return;
+            button.textContent = '퀴즈 만드는 중...';
+            button.disabled = true;
+            quizContainer.innerHTML = '<p>AI가 열심히 퀴즈를 만들고 있어요! 잠시만 기다려주세요...</p>';
+            const rulesContext = slideData.filter(s => s.type === 'interactive').map(s => s.title).join(', ');
+            const prompt = `Based on these English grammar rules (${rulesContext}), create a 3-question multiple-choice quiz. For each question, provide a 'question' sentence with a blank (___), four 'options' as an array of strings, and the zero-indexed 'answer' number. Return as a JSON array.`;
+            const schema = { type: "ARRAY", items: { type: "OBJECT", properties: { "question": { "type": "STRING" }, "options": { "type": "ARRAY", "items": { "type": "STRING" } }, "answer": { "type": "NUMBER" } } } };
+            const quizData = await callGemini(prompt, schema);
+            if (quizData && quizData.length > 0) {
+                renderQuiz(quizData, quizContainer);
+            } else {
+                quizContainer.innerHTML = '<p>퀴즈를 만드는 데 실패했어요. 잠시 후 다시 시도해주세요.</p>';
+            }
+            button.style.display = 'none';
+        }
+
+        function renderQuiz(quizData, container) { 
+            container.innerHTML = '';
+            const form = document.createElement('form');
+            form.id = 'quiz-form';
+            quizData.forEach((item, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'mb-6 p-4 bg-gray-50 rounded-lg';
+                let optionsHTML = '';
+                item.options.forEach((option, i) => {
+                    optionsHTML += `<label class="block p-2 rounded-md cursor-pointer quiz-option"><input type="radio" name="question-${index}" value="${i}" class="mr-2">${option}</label>`;
+                });
+                questionDiv.innerHTML = `<p class="font-bold mb-2">${index + 1}. ${item.question}</p><div class="space-y-1">${optionsHTML}</div><div data-role="feedback" class="mt-2 font-bold"></div>`;
+                form.appendChild(questionDiv);
+            });
+            const submitButton = document.createElement('button');
+            submitButton.type = 'submit';
+            submitButton.className = 'base-button reveal-button';
+            submitButton.textContent = '정답 확인하기';
+            form.appendChild(submitButton);
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                let score = 0;
+                quizData.forEach((item, index) => {
+                    const questionBlock = e.target.querySelector(`input[name="question-${index}"]`).closest('.mb-6');
+                    const feedbackEl = questionBlock.querySelector('div[data-role="feedback"]');
+                    
+                    const selected = questionBlock.querySelector(`input[name="question-${index}"]:checked`);
+                    
+                    if (selected) {
+                        if (parseInt(selected.value) === item.answer) {
+                            score++;
+                            feedbackEl.textContent = '정답입니다! 👍';
+                            feedbackEl.className = 'mt-2 font-bold text-green-600';
+                        } else {
+                            feedbackEl.textContent = `틀렸어요. 정답은 "${item.options[item.answer]}" 입니다.`;
+                            feedbackEl.className = 'mt-2 font-bold text-red-600';
+                        }
+                    } else {
+                        feedbackEl.textContent = '답을 선택해주세요!';
+                        feedbackEl.className = 'mt-2 font-bold text-yellow-600';
+                    }
+                });
+                const scoreResult = document.createElement('p');
+                scoreResult.className = 'text-center text-xl font-bold mt-4';
+                scoreResult.textContent = `총 ${quizData.length}문제 중 ${score}개를 맞혔어요!`;
+                if(!form.querySelector('p.text-center')) {
+                    form.appendChild(scoreResult);
+                }
+            });
+            container.appendChild(form);
+        }
+
+        function renderSlides() {
+            slideData.forEach((data, index) => {
+                const slideElement = createSlide(data, index);
+                container.appendChild(slideElement);
+            });
+        }
+
+        function updateSlideView() {
+            const slides = document.querySelectorAll('.slide');
+            slides.forEach((slide, index) => {
+                if (index === currentSlide) {
+                    slide.classList.remove('hidden');
+                    setTimeout(() => slide.style.opacity = 1, 50);
+                } else {
+                    slide.style.opacity = 0;
+                    slide.classList.add('hidden');
+                }
+            });
+            slideCounter.textContent = `${currentSlide + 1} / ${totalSlides}`;
+            prevButton.disabled = currentSlide === 0;
+            nextButton.disabled = currentSlide === totalSlides - 1;
+        }
+        
+        function resetSlideContent(slideIndex) {
+            const slide = document.getElementById(`slide-${slideIndex}`);
+            if(slide) {
+                const explanation = slide.querySelector('.explanation-container');
+                if(explanation) explanation.classList.remove('visible-content');
+                
+                const analysis = slide.querySelector('.analysis-container');
+                if(analysis) {
+                    analysis.classList.remove('visible-content');
+                    analysis.querySelector('.analysis-box').innerHTML = '';
+                }
+            }
+        }
+
+        function handleNav(direction) {
+            resetSlideContent(currentSlide);
+            if (direction === 'next' && currentSlide < totalSlides - 1) currentSlide++;
+            else if (direction === 'prev' && currentSlide > 0) currentSlide--;
+            updateSlideView();
+        }
+
+        function restart() {
+            resetSlideContent(currentSlide);
+            currentSlide = 0;
+            updateSlideView();
+            const quizContainer = document.getElementById('quiz-container');
+            const quizButton = document.getElementById('quiz-button');
+            if(quizContainer && quizButton) {
+                quizContainer.innerHTML = '';
+                quizButton.style.display = 'inline-block';
+                quizButton.disabled = false;
+                quizButton.textContent = '퀴즈 풀어보기 ✨';
+            }
+        }
+
+        container.addEventListener('click', function(e) {
+            if (e.target.id === 'start-animation-button') {
+                const items = e.target.closest('.slide-content').querySelectorAll('.animated-item');
+                items.forEach(item => item.classList.add('visible'));
+                e.target.textContent = '확인 완료!';
+                e.target.disabled = true;
+            } else if (e.target.id === 'quiz-button') {
+                handleGenerateQuiz(e.target);
+            } else if (e.target.id === 'restart-button') {
+                restart();
+            } else if (e.target.matches('.reveal-button')) {
+                const explanation = e.target.closest('.slide-content').querySelector('.explanation-container');
+                if (explanation) explanation.classList.toggle('visible-content');
+            } else if (e.target.matches('.gemini-button.analysis-button')) {
+                handleAnalysis(e.target);
+            } else if (e.target.matches('.gemini-button')) {
+                handleGenerateExample(e.target);
+            }
+        });
+
+        renderSlides();
+        updateSlideView();
+        nextButton.addEventListener('click', () => handleNav('next'));
+        prevButton.addEventListener('click', () => handleNav('prev'));
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') handleNav('next');
+            else if (e.key === 'ArrowLeft') handleNav('prev');
+        });
+    })();
+    </script>
+</body>
+</html>
