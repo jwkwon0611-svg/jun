@@ -41,7 +41,7 @@
         .animated-item {
             opacity: 0;
             transform: translateY(20px);
-            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
         }
         .animated-item.visible {
             opacity: 1;
@@ -131,10 +131,18 @@
     // --- Slide Data ---
     const slideData = [
         { type: 'cover', title: '독해의 시작', subtitle: '메르센 영어 - 권익준 선생님' },
+        {
+            type: 'animated-text-reveal',
+            title: '독해가 어려운 이유?',
+            items: [
+                { text: '어휘?', class: 'text-4xl text-gray-500' },
+                { text: '문법?', class: 'text-4xl text-gray-500' },
+                { text: '결국... <span class="highlight-red font-black">문장이 길어서!</span>', class: 'text-6xl text-red-600 font-bold mt-8' }
+            ]
+        },
         { 
             type: 'simple', 
-            title: '도전! 직접 해석해 보세요 ✍️',
-            subtitle: '아래 문장을 끊어읽기 없이 해석해 볼까요?',
+            title: '도전! 긴 문장 해석하기 ✍️',
             content: '이 문장을 쉽게 해석하려면 어떻게 해야 할까요? 지금부터 그 비법을 하나씩 알려드릴게요.',
             example: '"Since that time, it has become apparent that broadly effective pesticides can have harmful effects on beneficial insects, which can negate their effects in controlling pests, and that persistent pesticides can damage non-target organisms in the ecosystem, such as birds and people."'
         },
@@ -275,6 +283,15 @@
                         </div>
                         <button id="start-animation-button" class="base-button reveal-button mt-10">덩어리 확인하기!</button>
                     </div>`;
+            } else if (data.type === 'animated-text-reveal') {
+                const itemsHTML = data.items.map((item, i) => 
+                    `<div class="animated-item text-center ${item.class}" style="transition-delay: ${i * 1000}ms;">${item.text}</div>`
+                ).join('');
+                slideHTML = `<div class="slide-content flex flex-col justify-center items-center h-full">
+                                <h1 class="text-5xl font-black text-gray-800 mb-16">${data.title}</h1>
+                                <div class="space-y-8">${itemsHTML}</div>
+                                <button id="start-animation-button" class="base-button reveal-button mt-16">확인하기</button>
+                            </div>`;
             } else if (data.type === 'overview') {
                 const sectionsHTML = data.sections.map(section => 
                     `<div class="bg-blue-50 p-4 rounded-lg">
@@ -292,7 +309,7 @@
             } else if (data.type === 'simple') {
                  slideHTML = `<div class="slide-content">
                         <h1 class="text-3xl md:text-4xl font-black text-gray-800 mb-2">${data.title}</h1>
-                        <h2 class="text-xl md:text-2xl font-bold text-blue-600 mb-6">${data.subtitle}</h2>
+                        ${data.subtitle ? `<h2 class="text-xl md:text-2xl font-bold text-blue-600 mb-6">${data.subtitle}</h2>` : ''}
                         <p class="text-lg text-gray-600 mb-6">${data.content}</p>
                         <div class="example-box">
                             <p class="text-gray-500 text-sm mb-2 font-bold">도전 문장</p>
